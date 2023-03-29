@@ -22,6 +22,6 @@ def main():
     for r in results:
         plot = r.plot()
         cv2.imwrite('plot.png', plot)
-s
+
 if __name__ == '__main__':
     main()
