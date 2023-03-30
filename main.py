@@ -2,10 +2,7 @@
 # https://www.geeksforgeeks.org/python-opencv-cv2-imwrite-method/
 # get models from https://github.com/ultralytics/ultralytics
 
-import shutil
-import os
 import sys
-import time
 from uuid import uuid4
 import numpy as np
 import ultralytics
@@ -111,8 +108,6 @@ def main(argv):
 	})
 	
 	print(result)
-
-
 
 if __name__ == '__main__':
 	main(sys.argv[1:])
