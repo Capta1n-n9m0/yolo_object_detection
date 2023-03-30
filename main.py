@@ -2,11 +2,12 @@ import shutil
 import os
 import time
 import argparse
-import subprocess as sp
 
+from pprint import pprint
 import numpy as np
 import ultralytics
 from PIL import Image, ImageDraw
+from pathlib import Path
 
 # get models from https://github.com/ultralytics/ultralytics
 
@@ -20,38 +21,44 @@ def main():
 	# https://www.geeksforgeeks.org/python-opencv-cv2-imwrite-method/
 	detection_model = ultralytics.YOLO(DETECTION_MODEL, task='detect')
 	classification_model = ultralytics.YOLO(CLASSIFICATION_MODEL, task='classify')
-	image_path = 'img.png'
-	img = Image.open(image_path)
+	image_name = 'img_1.png'
+	# image_path = Path(image_name).absolute()
+	# print(image_path.)
+	# exit(1)
+	
+	img = Image.open(image_name)
 	results = detection_model(img)
 	detections = []
-	objects = []
 	for r in results:
-		objectsId = r.boxes.cls
-		for i in objectsId:
-			objects.append(r.names[i.item()])
-		for i, (b, c) in enumerate(zip(r.boxes, r.boxes.cls)):
-			prob = np.array(b.cpu().data)[0, 4]
-			b = b.cpu().xyxy.numpy()[0]
+		for b, c in zip(r.boxes, r.boxes.cls):
+			b = b.cpu()
+			prob = np.array(b.data)[0, 4]
+			bbox = b.xyxy.numpy()[0]
+			temp_img = img.crop(bbox)
 			detections.append({
-				'bbox': b,
-				'category_id': c.item(),
+				'bbox': bbox.tolist(),
 				'category': r.names[c.item()],
-				'score': prob
+				'score': prob,
+				'crop': temp_img,
 			})
-			temp_img = img.crop((b[0], b[1], b[2], b[3]))
-			temp_img.save(f"temp_{i}_{objects[i]}.png")
-		plot = r.plot(show_conf=True, line_width=1, pil=True)[:, :, ::-1]
-		plot = Image.fromarray(plot)
-		plot.save('plot.png')
-	print(detections)
-	crops = [f"temp_{i}_{o}.png" for i, o in enumerate(objects)]
-	print(crops)
+	crops = [d['crop'] for d in detections]
 	results = classification_model(crops)
-	objects = []
-	for i, r in enumerate(results):
+	for r, d in zip(results, detections):
 		r = r.cpu()
-		objects.append(r.names[np.argmax(r.probs).item()])
-	print(objects)
+		temp_id = np.argmax(np.array(r.probs))
+		temp_name = r.names[temp_id]
+		temp_prob = np.array(r.probs)[temp_id]
+		if temp_prob > d['score']:
+			d['category'] = temp_name
+			d['score'] = temp_prob
+	drawer = ImageDraw.Draw(img)
+	for d in detections:
+		bbox = d['bbox']
+		drawer.rectangle(bbox, outline='red')
+	
+	img.save('result.png')
+	
+	pprint(detections)
 
 
 
