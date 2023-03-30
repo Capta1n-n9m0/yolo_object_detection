@@ -92,7 +92,7 @@ def main(argv):
 	# Save results
 	colormap = {}
 	drawer = ImageDraw.Draw(img)
-	for d in detections:
+	for d in detections[:-1]:
 		if d['category'] not in colormap:
 			colormap[d['category']] = COLORS[len(colormap)]
 		drawer.rectangle(d['bbox'], outline=colormap[d['category']], width=1)
