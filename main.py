@@ -72,15 +72,16 @@ def main(image_input, storage_input):
 		
 	# Run classification on crops
 	crops = [d['crop'] for d in detections]
-	classification_results = classification_model(crops)
-	for r, d in zip(classification_results, detections):
-		r = r.cpu()
-		temp_id = np.argmax(np.array(r.probs))
-		temp_name = r.names[temp_id]
-		temp_prob = np.array(r.probs)[temp_id]
-		if temp_prob > d['score']:
-			d['category'] = temp_name
-			d['score'] = temp_prob
+	if len(crops) > 0:
+		classification_results = classification_model(crops)
+		for r, d in zip(classification_results, detections):
+			r = r.cpu()
+			temp_id = np.argmax(np.array(r.probs))
+			temp_name = r.names[temp_id]
+			temp_prob = np.array(r.probs)[temp_id]
+			if temp_prob > d['score']:
+				d['category'] = temp_name
+				d['score'] = temp_prob
 		
 	# Run classification on the whole image
 	classification_result = classification_model(img)[0].cpu()
