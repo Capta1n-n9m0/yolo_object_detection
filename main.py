@@ -106,8 +106,8 @@ def main(image_input, storage_input):
 	img.save(output_path)
 	
 	# Return results
+	output = output_path.name
 	result = json.dumps({
-		'output': output_path.as_posix(),
 		'detections': [{
 			'bbox': [float(b) for b in d['bbox']],
 			'category': d['category'].replace('_', ' '),
@@ -115,10 +115,12 @@ def main(image_input, storage_input):
 		} for d in detections],
 	})
 	
-	return result
+	return output, result
 
 if __name__ == '__main__':
 	image_input = sys.argv[1]
 	storage_input = sys.argv[2]
 	build_models()
-	print(main(image_input, storage_input))
+	output, result = main(image_input, storage_input)
+	print(output)
+	print(result)
