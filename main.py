@@ -1,5 +1,6 @@
 import shutil
 import os
+import sys
 import time
 import argparse
 
@@ -16,15 +17,15 @@ DETECTION_MODEL = f"yolov8{MODEL_SIZE}.pt"
 CLASSIFICATION_MODEL = f"yolov8{MODEL_SIZE}-cls.pt"
 
 
-def main():
+def main(argv):
 	# https://docs.ultralytics.com/modes/predict/#probs
 	# https://www.geeksforgeeks.org/python-opencv-cv2-imwrite-method/
 	detection_model = ultralytics.YOLO(DETECTION_MODEL, task='detect')
 	classification_model = ultralytics.YOLO(CLASSIFICATION_MODEL, task='classify')
-	image_name = 'img_1.png'
-	# image_path = Path(image_name).absolute()
-	# print(image_path.)
-	# exit(1)
+	arg = '/mnt/c/Users/aliev/PycharmProjects/yolo_object_detection'
+	image_path = Path(arg).absolute()
+	print(image_path.parts[-1])
+	exit(1)
 	
 	img = Image.open(image_name)
 	results = detection_model(img)
@@ -63,4 +64,4 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
+	main(sys.argv[1:])
