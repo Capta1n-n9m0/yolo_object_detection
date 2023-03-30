@@ -11,8 +11,9 @@ from pathlib import Path
 import json
 
 MODEL_SIZE = 'm'
-DETECTION_MODEL = f"yolov8{MODEL_SIZE}.pt"
-CLASSIFICATION_MODEL = f"yolov8{MODEL_SIZE}-cls.pt"
+HOME_DIR = Path(__file__).parent.absolute()
+DETECTION_MODEL = HOME_DIR / f"yolov8{MODEL_SIZE}.pt"
+CLASSIFICATION_MODEL = HOME_DIR / f"yolov8{MODEL_SIZE}-cls.pt"
 COLORS = [
 	(255, 0, 0), # red
 	(0, 255, 0), # green
@@ -37,14 +38,21 @@ COLORS = [
 	(69, 0, 255), # indigo
 ]
 
-def main(argv):
+detection_model: ultralytics.YOLO = None
+classification_model: ultralytics.YOLO = None
+
+def build_models(detection_model_path=DETECTION_MODEL, classification_model_path=CLASSIFICATION_MODEL):
+	global detection_model
+	global classification_model
+	detection_model = ultralytics.YOLO(detection_model_path, task='detect')
+	classification_model = ultralytics.YOLO(classification_model_path, task='classify')
+
+def main(image_input, storage_input):
+	if detection_model is None or classification_model is None:
+		build_models()
 	# Get paths
-	image_path = Path(argv[0]).absolute()
-	storage_path = Path(argv[1]).absolute()
-	
-	# Load models
-	detection_model = ultralytics.YOLO(DETECTION_MODEL, task='detect')
-	classification_model = ultralytics.YOLO(CLASSIFICATION_MODEL, task='classify')
+	image_path = Path(image_input).absolute()
+	storage_path = Path(storage_input).absolute()
 	
 	# Run detection
 	img = Image.open(image_path)
@@ -107,7 +115,10 @@ def main(argv):
 		} for d in detections],
 	})
 	
-	print(result)
+	return result
 
 if __name__ == '__main__':
-	main(sys.argv[1:])
+	image_input = sys.argv[1]
+	storage_input = sys.argv[2]
+	build_models()
+	print(main(image_input, storage_input))
